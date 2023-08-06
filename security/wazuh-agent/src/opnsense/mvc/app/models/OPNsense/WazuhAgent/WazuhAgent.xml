@@ -1,0 +1,47 @@
+<model>
+    <mount>//OPNsense/WazuhAgent</mount>
+    <version>1.0.0</version>
+    <description>
+        Wazuh Agent
+    </description>
+    <items>
+        <general>
+            <enabled type="BooleanField">
+                <default>1</default>
+                <Required>Y</Required>
+            </enabled>
+            <server_address type="HostnameField">
+                <Required>Y</Required>
+                <IpAllowed>Y</IpAllowed>
+            </server_address>
+        </general>
+        <auth>
+            <password type="TextField">
+            </password>
+        </auth>
+        <logcollector>
+            <remote_commands type="BooleanField">
+                <default>1</default>
+                <Required>Y</Required>
+            </remote_commands>
+        </logcollector>
+        <rootcheck>
+            <enabled type="BooleanField">
+                <default>1</default>
+                <Required>Y</Required>
+            </enabled>
+        </rootcheck>
+        <syscollector>
+            <enabled type="BooleanField">
+                <default>1</default>
+                <Required>Y</Required>
+            </enabled>
+        </syscollector>
+        <syscheck>
+            <enabled type="BooleanField">
+                <default>1</default>
+                <Required>Y</Required>
+            </enabled>
+        </syscheck>
+    </items>
+</model>
