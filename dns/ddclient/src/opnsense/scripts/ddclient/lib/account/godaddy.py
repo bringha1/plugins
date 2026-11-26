@@ -31,9 +31,6 @@ from . import BaseAccount
 class godaddy(BaseAccount):
     _services = ['godaddy']
 
-    def __init__(self, account: dict):
-        super().__init__(account)
-
     @staticmethod
     def known_services():
         return godaddy._services
