@@ -52,7 +52,7 @@ class godaddy(BaseAccount):
             
             # GoDaddy erwartet mindestens 600 Sekunden als Integer (nicht String!)
             try:
-                ttl = max(600, int(self.settings.get('ttl', 600)))
+                ttl = max(600, int(self.settings.get('ttl') or 600))
             except (ValueError, TypeError):
                 ttl = 600
             # API-Key (Username) und Secret (Password)
