@@ -1,5 +1,5 @@
 """
-    Copyright (c) 2023 Ad Schellevis <ad@opnsense.org>
+    Copyright (c) 2026 
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,6 @@ class godaddy(BaseAccount):
             record_type = 'AAAA' if ':' in ip else 'A'
             zone = self.settings.get('zone', '').strip()
             
-            # GoDaddy erwartet mindestens 600 Sekunden als Integer (nicht String!)
             try:
                 ttl = max(600, int(self.settings.get('ttl') or 600))
             except (ValueError, TypeError):
@@ -77,7 +76,7 @@ class godaddy(BaseAccount):
                 payload = [
                     {
                         'data': ip,
-                        'ttl': ttl  # WICHTIG: Muss ein int sein (Fix für Issue #5220)
+                        'ttl': ttl  
                     }
                 ]
                 try:
