@@ -1,5 +1,5 @@
 """
-    Copyright (c) 2026 
+    Copyright (c) 2026 bringha1
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
