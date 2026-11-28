@@ -107,4 +107,5 @@ class Godaddy(BaseAccount):
             )
             self.update_state(address=self.current_address)
             return True
+            
         return False
