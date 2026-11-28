@@ -29,8 +29,11 @@ from . import BaseAccount
 
 
 class godaddy(BaseAccount):
-    _services = ['godaddy']
+    _services = {'godaddy': 'GoDaddy'}
 
+    def __init__(self, account: dict):
+        super().__init__(account)
+        
     @staticmethod
     def known_services():
         return godaddy._services
