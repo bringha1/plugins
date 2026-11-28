@@ -28,19 +28,19 @@ import requests
 from . import BaseAccount
 
 
-class godaddy(BaseAccount):
+class Godaddy(BaseAccount):
     _services = {'godaddy': 'GoDaddy'}
 
     def __init__(self, account: dict):
         super().__init__(account)
-        
+
     @staticmethod
     def known_services():
-        return godaddy._services
+        return Godaddy._services
 
     @staticmethod
     def match(account):
-        return account.get('service') in godaddy._services
+        return account.get('service') in Godaddy._services
 
     def execute(self):
         """ GoDaddy DNS update
@@ -49,11 +49,13 @@ class godaddy(BaseAccount):
             ip = str(self.current_address)
             record_type = 'AAAA' if ':' in ip else 'A'
             zone = self.settings.get('zone', '').strip()
-            
+            wildcard = str(self.settings.get('wildcard', '0')) == '1'
+
             try:
                 ttl = max(600, int(self.settings.get('ttl') or 600))
             except (ValueError, TypeError):
                 ttl = 600
+
             # API-Key (Username) und Secret (Password)
             headers = {
                 'Authorization': f"sso-key {self.settings.get('username')}:{self.settings.get('password')}",
@@ -64,31 +66,43 @@ class godaddy(BaseAccount):
             hostnames = [h.strip() for h in self.settings.get('hostnames', '').split(',') if h.strip()]
 
             for hostname in hostnames:
+                # Fallback, falls das Zone-Feld in der GUI leer gelassen wurde
+                target_zone = zone
+                if not target_zone:
+                    parts = hostname.split('.')
+                    target_zone = '.'.join(parts[-2:]) if len(parts) >= 2 else hostname
+
                 # Subdomain aus FQDN extrahieren (z.B. '://example.com' -> 'vpn', Root -> '@')
-                if hostname == zone:
+                if hostname == target_zone:
                     record_name = '@'
-                elif zone and hostname.endswith(f".{zone}"):
-                    record_name = hostname[:-(len(zone) + 1)]
+                elif target_zone and hostname.endswith(f".{target_zone}"):
+                    record_name = hostname[:-(len(target_zone) + 1)]
                 else:
                     record_name = hostname
 
-                url = f"https://api.godaddy.com/v1/domains/{zone}/records/{record_type}/{record_name}"
-                payload = [
-                    {
-                        'data': ip,
-                        'ttl': ttl  
-                    }
-                ]
-                try:
-                    response = requests.put(url, json=payload, headers=headers, timeout=15)
-                    if response.status_code != 200:
-                        raise RuntimeError(
-                            f"GoDaddy update failed for {self.description} ({hostname} -> {ip}): "
-                            f"HTTP {response.status_code} - {response.text}"
-                        )
-                except Exception as e:
-                    syslog.syslog(syslog.LOG_ERR, str(e))
-                    return False
+                records = [record_name]
+                if wildcard:
+                    wc_record = '*' if record_name == '@' else f"*.{record_name}"
+                    records.append(wc_record)
+
+                for rec in records:
+                    url = f"https://api.godaddy.com/v1/domains/{target_zone}/records/{record_type}/{rec}"
+                    payload = [
+                        {
+                            'data': ip,
+                            'ttl': ttl
+                        }
+                    ]
+                    try:
+                        response = requests.put(url, json=payload, headers=headers, timeout=15)
+                        if response.status_code != 200:
+                            raise RuntimeError(
+                                f"GoDaddy update failed for {self.description} ({hostname} -> {ip}): "
+                                f"HTTP {response.status_code} - {response.text}"
+                            )
+                    except Exception as e:
+                        syslog.syslog(syslog.LOG_ERR, str(e))
+                        return False
 
             syslog.syslog(
                 syslog.LOG_NOTICE,
@@ -96,5 +110,4 @@ class godaddy(BaseAccount):
             )
             self.update_state(address=self.current_address)
             return True
-
         return False
