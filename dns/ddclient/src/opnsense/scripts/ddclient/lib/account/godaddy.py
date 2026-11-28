@@ -56,7 +56,6 @@ class Godaddy(BaseAccount):
             except (ValueError, TypeError):
                 ttl = 600
 
-            # API-Key (Username) und Secret (Password)
             headers = {
                 'Authorization': f"sso-key {self.settings.get('username')}:{self.settings.get('password')}",
                 'Content-Type': 'application/json',
@@ -66,13 +65,11 @@ class Godaddy(BaseAccount):
             hostnames = [h.strip() for h in self.settings.get('hostnames', '').split(',') if h.strip()]
 
             for hostname in hostnames:
-                # Fallback, falls das Zone-Feld in der GUI leer gelassen wurde
                 target_zone = zone
                 if not target_zone:
                     parts = hostname.split('.')
                     target_zone = '.'.join(parts[-2:]) if len(parts) >= 2 else hostname
 
-                # Subdomain aus FQDN extrahieren (z.B. '://example.com' -> 'vpn', Root -> '@')
                 if hostname == target_zone:
                     record_name = '@'
                 elif target_zone and hostname.endswith(f".{target_zone}"):
